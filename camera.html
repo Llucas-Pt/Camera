@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Envio da Câmera</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    video {
+      width: 90%;
+      max-width: 600px;
+      border: 2px solid white;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Transmissão da Câmera</h1>
+  <p>Essa câmera está transmitindo ao vivo para o visualizador.</p>
+
+  <video id="preview" autoplay muted playsinline></video>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const video = document.getElementById('preview');
+    const socket = io(); // conecta ao servidor
+
+    // Requisita permissão da câmera
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(stream => {
+        video.srcObject = stream;
+
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm; codecs=vp8'
+        });
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            // Envia para o servidor via socket
+            socket.emit('video-chunk', event.data);
+          }
+        };
+
+        mediaRecorder.start(200); // envia a cada 200ms
+      })
+      .catch(err => {
+        console.error('Erro ao acessar a câmera:', err);
+        alert('Erro ao acessar a câmera. Verifique as permissões.');
+      });
+  </script>
+</body>
+</html>

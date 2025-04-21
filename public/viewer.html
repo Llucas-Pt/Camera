@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visualizador de Câmera</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    video {
+      width: 90%;
+      max-width: 600px;
+      border: 2px solid white;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Visualizador de Câmera</h1>
+  <p>Aguardando transmissão ao vivo...</p>
+  <video id="remote" autoplay playsinline></video>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const video = document.getElementById('remote');
+    let mediaSource = new MediaSource();
+    video.src = URL.createObjectURL(mediaSource);
+
+    mediaSource.addEventListener('sourceopen', () => {
+      const sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
+
+      socket.on('video-chunk', (chunk) => {
+        sourceBuffer.appendBuffer(new Uint8Array(chunk));
+      });
+    });
+  </script>
+</body>
+</html>
