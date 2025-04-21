@@ -6,13 +6,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socket(server);
 
-app.use(express.static('public')); // onde ficam camera.html e viewer.html
+app.use(express.static('public')); // Serve os arquivos estáticos (camera.html e viewer.html)
 
 io.on('connection', socket => {
   console.log('Novo cliente conectado');
 
   socket.on('video-chunk', data => {
-    // transmite para todos, menos o próprio
+    // Transmite os dados de vídeo para todos os clientes, exceto o que enviou
     socket.broadcast.emit('video-chunk', data);
   });
 });
